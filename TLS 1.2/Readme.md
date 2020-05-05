@@ -1,4 +1,4 @@
-1. **Have .NET Framework 4.5 or newer installed**
+1. **Have .NET Framework 4.5 or a newer version installed**
 
 2. **Check following registry keys exist (if they don't exist please create them)**
 
