@@ -3,3 +3,5 @@
 	
 1. **Common issues**
 	- https://docs.microsoft.com/en-gb/archive/blogs/jtarquino/the-strange-case-of-data-source-cant-be-created-with-reporting-services-2016-in-azure-vm
+	
+Restart server after changes
