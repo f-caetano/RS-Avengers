@@ -1,4 +1,4 @@
-﻿## ===============================================================================================================================
+## ===============================================================================================================================
 #  The following script is designed to collect information that will help Microsoft Customer Support Services (CSS) troubleshoot
 #
 #  Microsoft CSS provides a secure file transfer to upload the generated files as they are not automatically sent to Microsoft 
@@ -8,7 +8,6 @@
 # Runtime Variables
 $Date = Get-Date
 $Days = 5
-$DaysMilliseconds = $Days * 86400000
 $MachineName = $env:COMPUTERNAME.ToLower()
 $MonthDay = $Date.ToString("MMdd")
 $RuningDir = "$PSScriptRoot"
@@ -17,10 +16,10 @@ $RSFile = "$SavingDir\ReportServer_"+$MonthDay+"_("+$MachineName+").txt"
 $ServerInfo = "$SavingDir\Info_"+$MonthDay+"_("+$MachineName+").txt"
 $EventFile = "$SavingDir\Event_"+$MonthDay+"_("+$MachineName+")_"
 $ZipFile = "$RuningDir\ReportServer_"+$MonthDay+"_("+$MachineName+").zip"
-
+$DaysMilliseconds = $Days * 86400000
 $WindowsEvents = New-Object System.Diagnostics.Eventing.Reader.EventLogSession
 $query = "*[System[TimeCreated[timediff(@SystemTime) < "+$DaysMilliseconds+"]]]"
-$ConfigModeOnly = 1
+$ConfigModeOnly = 0
 
 # Function to allow run in ISE or PS.EXE
 Function Pause ($Message = "`n`nPress any key to exit . . .") {
@@ -233,12 +232,12 @@ $RSInstallDir = ((Get-Item $_.PathName).DirectoryName).TrimEnd("ReportServer")
 if(!(Test-Path $ConfigDestination))
 {New-Item -ItemType Directory -Force -Path $ConfigDestination | Out-Null}
 # Create LogFiles Folder
-if(!(Test-Path $LogFilesDestination))
+if(!(Test-Path $LogFilesDestination) and $ConfigModeOnly -ne 1))
 {New-Item -ItemType Directory -Force -Path $LogFilesDestination | Out-Null}
 
 # Copy configuration files to ConfigDestination
 Copy-Item -Path "$ConfigSource\*" -Include "*.config" -Destination $ConfigDestination -Force
-If($ConfigModeOnly -eq 1)
+If($ConfigModeOnly -ne 1)
 { Get-ChildItem -Path $RSInstallDir"LogFiles\*" -Include "*.log" | Where-Object {$_.lastwritetime -gt ($Date).AddDays(-$Days)} | Copy-Item -Destination $LogFilesDestination -Force
 }
 
@@ -247,7 +246,8 @@ If($Instance -eq "PBIRS")
 # Copy PBI RS Specific files
 Copy-Item -Path $RSInstallDir"ASEngine\*" -Include msmdsrv.exe.config, msmdsrv.ini -Destination $ConfigDestination -Force
 Copy-Item -Path $RSInstallDir"RSHostingService\*" -Include config.json -Destination $ConfigDestination -Force
-Copy-Item -Path $RSInstallDir"LogFiles\*" -Include ª.trc, msmdsrv.log -Destination $LogFilesDestination -Force
+If($ConfigModeOnly -ne 1)
+{Copy-Item -Path $RSInstallDir"LogFiles\*" -Include ª.trc, msmdsrv.log -Destination $LogFilesDestination -Force}
 
 Get-ChildItem -Path "$ConfigDestination\*" -Include config.json -Exclude *$MachineName* | Move-Item -Destination {$_.FullName.Replace(".json","_($MachineName).json")} -force
 Get-ChildItem -Path "$ConfigDestination\*" -Include msmdsrv.ini -Exclude *$MachineName* | Move-Item -Destination {$_.FullName.Replace(".ini","_($MachineName).ini")} -force
@@ -263,7 +263,7 @@ Write-Warning "Failed to collect Report Server configuration files"
 Write-Warning $Error[0]
 Pause
 }
-If($ConfigModeOnly -eq 1)
+If($ConfigModeOnly -ne 1)
 # Get Windows Event Logs (Last $Days only)
 {Remove-item "$SavingDir\*" -Include *.evtx
 # Extract Windows Events
