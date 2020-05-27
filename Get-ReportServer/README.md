@@ -1,3 +1,0 @@
-# Get-ReportServer
-Save both files on the report server
-Righ click the .BAT file and run with Administrator rights 
