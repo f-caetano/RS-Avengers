@@ -247,7 +247,7 @@ Get-ChildItem -Path $RSInstallDir"LogFiles\*" -Include "*.log" | Where-Object {$
 If($Instance -eq "PBIRS")
 {
 # Copy PBI RS Specific files
-Copy-Item -Path $RSInstallDir"ASEngine\*" -Include msmdsrv.exe.config, msmdsrv.ini -Destination $ConfigDestination -Force
+Copy-Item -Path $RSInstallDir"ASEngine\*" -Include msmdsrv.ini -Destination $ConfigDestination -Force
 Copy-Item -Path $RSInstallDir"RSHostingService\*" -Include config.json -Destination $ConfigDestination -Force
 If($ConfigModeOnly -ne 1)
 {Copy-Item -Path $RSInstallDir"LogFiles\*" -Include ª.trc, msmdsrv.log -Destination $LogFilesDestination -Force}
