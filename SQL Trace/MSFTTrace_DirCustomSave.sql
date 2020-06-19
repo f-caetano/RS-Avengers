@@ -33,7 +33,7 @@ ADD EVENT sqlserver.rpc_completed(
 ADD EVENT sqlserver.rpc_starting(
     ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_name,sqlserver.session_id,sqlserver.sql_text,sqlserver.username)),
 ADD EVENT sqlserver.sp_statement_completed(
-    ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_name,sqlserver.session_id,sqlserver.sql_text,sqlserver.username)),
+    ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_name,sqlserver.session_id,sqlserver.username)),
 ADD EVENT sqlserver.sql_statement_completed(
     ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_name,sqlserver.session_id,sqlserver.username))
 ADD TARGET package0.event_file(SET filename=N'''+ @DIR + '_MSFTTrace.xel'',max_file_size=(2048),max_rollover_files=(5))
