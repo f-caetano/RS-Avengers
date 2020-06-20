@@ -1,15 +1,15 @@
-/*=================== README ======================================================================
+/*=================== README ======================================================================================
 Running the entire script will start the trace. SysAdmin permission on the SQL Server is required
-Adjust the step 2 to an existing directory on the client/SSMS where code is executed
-STEP 5:  Code is comment with "--" and the T-SQL needs to be executed manually to end the trace
-===================================================================================================*/
+Adjust the step 2 to an existing directory/folder that needs to exists inside the target SQL SERVER
+STEP 5: Run this step manually as code is commented. Make sure to only select that T-SQL statement to end the trace
+==================================================================================================================*/
 USE master;
 GO
 /** 1. Cleanup **/ 
 IF EXISTS(SELECT * FROM sys.server_event_sessions WHERE name='_MSFTTrace')  
     DROP EVENT SESSION [_MSFTTrace] ON SERVER;  
 GO
-/** 2. Directory needs to exists and ending with backslash '\' **/
+/** 2. Directory needs to exists on the targeted SERVER. Important: Close the path with fowardslash '\' **/
 DECLARE 
 @DIR NVARCHAR(255) = 'C:\ms\',
 @sql NVARCHAR(MAX);
@@ -45,8 +45,8 @@ GO
 ALTER EVENT SESSION [_MSFTTrace] ON SERVER  
 STATE = START;
  
-/** 5. UNCOMMENT AND RUN THE SINGLE LINE BELLOW TO FINISH THE TRACE  **/
---DROP EVENT SESSION [_MSFTTrace] ON SERVER;
+/** 5. Stop the trace & Remove xEvent from Server. Please select only THE SINGLE LINE BELLOW  **
+DROP EVENT SESSION [_MSFTTrace] ON SERVER;
+											                                                  **/
 
-
-/** 6. Share the created trace file (.xel) with Microsoft  **/
+/** 6. Share the created trace file (.xel) **/
