@@ -4,7 +4,6 @@ Running the entire script will start the trace. SysAdmin permission on the SQL S
 After step 3: Code is needed to be executed manually. Further information details are on the steps 
               Please select only the specific code lines of the step to avoid running the entire script
 =========================================================================================================*/
-
 USE master;
 GO
 /** 1. Cleanup                                      **/
@@ -41,7 +40,7 @@ WITH (MAX_MEMORY=4096 KB,EVENT_RETENTION_MODE=ALLOW_SINGLE_EVENT_LOSS,MAX_DISPAT
 ALTER EVENT SESSION [_MSFTTrace] ON SERVER  
 STATE = START;
  
-/** 4. Stop the xEvent Trace                       **/
+/** 4. Stop the xEvent Trace                       **
 ALTER EVENT SESSION [_MSFTTrace] ON SERVER  
 STATE = STOP;
                                                    **/
@@ -58,7 +57,7 @@ Two options
     d) Save this file on a directory at your choice 
 **/
  
-/** 6. With the file saved (.xel) remove the xEvent created from the SQL Server  **/
+/** 6. With the file saved (.xel) remove the xEvent created from the SQL Server  **
 DROP EVENT SESSION [_MSFTTrace] ON SERVER;
                                                                                  **/
 /** 7. All done. Share the xEvent file (.xel)                                    **/
