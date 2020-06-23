@@ -1,3 +1,4 @@
+USE ReportServer  -- CHANGE THIS LINE FOR REPORT SERVER DATABASE NAME
 SELECT
 j.[Name] AS JobName
 ,cat.[Name] AS ReportName
