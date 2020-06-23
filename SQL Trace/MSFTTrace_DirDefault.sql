@@ -23,7 +23,7 @@ ADD EVENT sqlserver.blocked_process_report(
     ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_name,sqlserver.session_id,sqlserver.sql_text,sqlserver.username)),
 ADD EVENT sqlserver.error_reported(
     ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.session_id,sqlserver.sql_text,sqlserver.username)
-    WHERE (([severity]>(10)) AND ([state]>(1)))),
+    WHERE ([severity]>(10))),
 ADD EVENT sqlserver.rpc_completed(
     ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_name,sqlserver.session_id,sqlserver.sql_text,sqlserver.username)),
 ADD EVENT sqlserver.rpc_starting(
