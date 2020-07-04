@@ -1,0 +1,6 @@
+<Delete xmlns="http://schemas.microsoft.com/analysisservices/2003/engine"
+xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <Object>
+    <TraceID>CommandsAndQueriesDiscover</TraceID>
+  </Object>
+</Delete>
