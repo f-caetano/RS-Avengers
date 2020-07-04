@@ -1,7 +1,7 @@
 SQL Servers 2012 and above. Requires SysAdmin role on the SQL Server
 
-1. Preferable use the **"MSFTTrace_DirCustomSave"** script
-	- In case of permissions error of saving the .XEL in a directory use the alternative **MSFTTrace_DirDefault**.sql
+1. Preferable use the **"Create_MSFTTrace-CustomSave"** script
+	- In case of permissions error of saving the .XEL in a directory use the alternative file: **Create_MSFTTrace-Default**.sql
 	
 <br />
 <br />
@@ -17,7 +17,7 @@ SQL Servers 2012 and above. Requires SysAdmin role on the SQL Server
     OR (wait_type > 63 AND wait_type < 70)	 -- PAGEIOLATCH_ waits
     OR (wait_type > 96 AND wait_type < 100)  -- IO (Disk/Network) waits
     OR (wait_type = 107) 			 -- RESOURCE_SEMAPHORE waits
-    OR (wait_type = 113)			 -- SOS_WORKER waits\
+    OR (wait_type = 113)			 -- SOS_WORKER waits
     OR (wait_type = 120) 			 -- SOS_SCHEDULER_YIELD waits
     OR (wait_type = 178)			 -- WRITELOG waits
     OR (wait_type > 174 AND wait_type < 177) -- FCB_REPLICA_ waits

@@ -21,7 +21,7 @@
 
 7. After the issue is reproduced, run the following file to stop the trace
 		
-    `Delete_Trace.XMLA`
+    `Stop_Trace.XMLA`
 		
 8. Send the .TRC file generated and the latest logs *(compress whole directory)*
 	
