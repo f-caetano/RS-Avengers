@@ -19,7 +19,7 @@ SET @sql = '
 CREATE EVENT SESSION [_MSFTTrace] ON SERVER 
 ADD EVENT sqlos.wait_info(
     ACTION(sqlserver.database_name,sqlserver.session_id,sqlserver.sql_text)
-    WHERE ([opcode]=1 AND [duration]>10000 AND (([wait_type]>31 AND [wait_type]<38) OR ([wait_type]>47 AND [wait_type]<54) OR ([wait_type]>63 AND [wait_type]<70) OR ([wait_type]>96 AND [wait_type]<100) OR ([wait_type]=107) OR ([wait_type]=113) OR ([wait_type]>174 AND [wait_type]<179) OR ([wait_type]=178) OR ([wait_type]=186) OR ([wait_type]=207) OR ([wait_type]=269) OR ([wait_type]=283) OR ([wait_type]=284) OR ([duration]>30000 AND [wait_type]<22)))),
+    WHERE ([opcode]=1 AND [duration]>10000 AND (([wait_type]>31 AND [wait_type]<38) OR ([wait_type]>47 AND [wait_type]<54) OR ([wait_type]>63 AND [wait_type]<70) OR ([wait_type]>96 AND [wait_type]<100) OR ([wait_type]=107) OR ([wait_type]=113) OR ([wait_type]>174 AND [wait_type]<179) OR ([wait_type]=178) OR ([wait_type]=186) OR ([wait_type]=207) OR ([wait_type]=269) OR ([wait_type]=283) OR ([wait_type]=284) OR ([duration]>15000 AND [wait_type]<22)))),
 ADD EVENT sqlserver.attention(
     ACTION(sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_name,sqlserver.session_id,sqlserver.sql_text,sqlserver.username)
     WHERE ([sqlserver].[is_system]=(0))),
