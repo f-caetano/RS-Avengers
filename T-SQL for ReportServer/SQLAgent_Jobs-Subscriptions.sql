@@ -16,7 +16,7 @@ j.[Name] AS JobName
 ,j.[date_modified] AS JobModifed
 FROM dbo.ReportSchedule rs WITH (NOLOCK)
 INNER JOIN msdb.dbo.sysjobs j WITH (NOLOCK) ON CONVERT(SYSNAME,rs.ScheduleID) = j.[name] AND j.category_id = 100 --j.category_id = ReportServerJobs / comment this if no results
-INNER JOIN dbo.ReportSchedule c WITH (NOLOCK) ON j.name = CAST(c.ScheduleID AS SYSNAME)
+INNER JOIN dbo.ReportSchedule c WITH (NOLOCK) ON j.name = CONVERT(SYSNAME,c.ScheduleID)
 INNER JOIN dbo.Subscriptions sub  WITH (NOLOCK) ON c.SubscriptionID = sub.SubscriptionID
 INNER JOIN dbo.[Catalog] cat WITH (NOLOCK) ON sub.Report_OID = cat.ItemID
 INNER JOIN dbo.Users u WITH(NOLOCK) ON sub.ModifiedByID = u.UserID
