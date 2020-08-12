@@ -35,7 +35,7 @@
 # Usefull information to customize the code 
 | Parameter       | Information                                                                                               |
 |-----------------|-----------------------------------------------------------------------------------------------------------|
-| LogFileAppend   | 0 for Overwrite, 1 for Append.                                                                            |
+| LogFileAppend   | 0 for Overwrite, 1 for Appending multiple files.                                                                            |
 | AutoRestart     | 0 for No, 1 to restart when the server restarts.                                                          |
 | LogFileSize     | Size in MB.  The log will roll over when it reaches this size.                                            |
-| LogFileRollover | 1 means create a new log file (it appends 1, 2, 3, etc. for each new log) when you reach the LogFileSize. |
+| LogFileRollover | 1 means create a new log file. 0 (false) it will stop the trace after max file is reached
