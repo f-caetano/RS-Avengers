@@ -4,7 +4,7 @@ let
     __EndDate  = #date(Date.Year(__Today),12,31),
     P_Language = "EN", // Supporting Portuguese = PT
     P_FirstDayOfWeek = 1, // 1 = Monday
-	P_DateFormat = "en-US", // Workaround in case of date convert errors. It depends on client machine/data model language
+    P_DateFormat = "en-US", // Workaround in case of date convert errors. It depends on client machine/data model language
     DayCount = Duration.Days(Duration.From(__EndDate - __StartDate)) + 1,
     Source = List.Dates(__StartDate,DayCount,#duration(1,0,0,0)),
     TableFromList = Table.FromList(Source, Splitter.SplitByNothing()),    
