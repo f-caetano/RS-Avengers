@@ -4,7 +4,7 @@ let
     __EndDate  = #date(Date.Year(__Today),12,31),
     P_Language = "EN", // Supporting Portuguese = PT
     P_FirstDayOfWeek = 1, // 1 = Monday
-    P_DateFormat = "en-US", // Workaround in case of date convert errors. It depends on client machine/data model language
+    P_DateFormat = "en-US", // pt-PT . Helps in date convert errors and client machine/data model language
     DayCount = Duration.Days(Duration.From(__EndDate - __StartDate)) + 1,
     Source = List.Dates(__StartDate,DayCount,#duration(1,0,0,0)),
     TableFromList = Table.FromList(Source, Splitter.SplitByNothing()),    
@@ -39,8 +39,8 @@ let
     #"Removed Columns" = Table.RemoveColumns(#"Period (Day) - Short - Order",{"Start of Week", "End of Week"}),
     #"Changed Type" = Table.TransformColumnTypes(#"Removed Columns",{{"Year", Int64.Type}, {"Quarter", Int64.Type}, {"Day", Int64.Type}, {"Month", Int64.Type}, {"Date", type date}, {"Month (Name)", type text}, {"Month (Short Name)", type text}, {"Month of Year", type text}, {"Quarter of Year", type text}, {"Semester of Year", type text}, {"Week", Int64.Type}, {"Week of Year", type text}, {"Week Day", Int64.Type}, {"Week Day (Name)", type text}, {"MonthYearId", Int64.Type}, {"WeekYearId", Int64.Type}, {"QuarterYearId", Int64.Type}, {"SemesterYearId", Int64.Type}, {"Period (Year)", Int64.Type}, {"Period (Month)", Int64.Type}, {"Period (Day)", type text}, {"Period (Day) - Order", Int64.Type}, {"Semester", Int64.Type}, {"Period (Day) - Num", Int64.Type}}),
     #"Removed Columns1" = Table.RemoveColumns(#"Changed Type",{"Period (Day) - Num"}),
-    #"If Portuguese" = Table.AddColumn(#"Removed Columns1", "WeekDay", each Text.Start([#"Week Day (Name)"], 3), type text),
-    #"Renamed Columns" = Table.RenameColumns(#"If Portuguese",{{"Year", "Ano"},{"Semester", "Semestre"}, {"Quarter", "Trimestre"}, {"Month", "Mês (Num.)"}, {"Month (Name)", "Mês"}, {"Month of Year", "Mês (Ano)"}, {"Quarter of Year", "Trimestre (Ano)"}, {"Semester of Year", "Semestre (Ano)"}, {"MonthYearId", "CodMes(Ano)"}, {"Period (Year)", "Período (Ano)"}, {"Period (Month)", "Período (Mês)"}, {"Date", "Data"}, {"Day", "Dia"}, {"Week", "Semana"}, {"Week of Year", "Semana (Ano)"}, {"Week Day", "Dia Semana (Num.)"}, {"Week Day (Name)", "Dia Semana"}, {"Month (Short Name)", "Mês (Abrev.)"}, {"WeekYearId", "CodSemanaAno"}, {"QuarterYearId", "CodTrimestreAno"}, {"SemesterYearId", "CodSemestreAno"}, {"Period (Day)", "Período (Dia)"}, {"Period (Day) - Order", "Período (Dia) - Ordem"}}),
-    result = if P_Language = "PT" then #"Renamed Columns" else #"If Portuguese"
+    #"Add WeekDay Name" = Table.AddColumn(#"Removed Columns1", "Week Day (Short)", each Text.Start([#"Week Day (Name)"], 3), type text),
+    #"If Portuguese" = Table.RenameColumns(#"Add WeekDay Name",{{"Year", "Ano"},{"Semester", "Semestre"}, {"Quarter", "Trimestre"}, {"Month", "Mês (Num.)"}, {"Month (Name)", "Mês"}, {"Month of Year", "Mês (Ano)"}, {"Quarter of Year", "Trimestre (Ano)"}, {"Semester of Year", "Semestre (Ano)"}, {"MonthYearId", "CodMes(Ano)"}, {"Period (Year)", "Período (Ano)"}, {"Period (Month)", "Período (Mês)"}, {"Date", "Data"}, {"Day", "Dia"}, {"Week", "Semana"}, {"Week of Year", "Semana (Ano)"}, {"Week Day", "Dia Semana (Num.)"}, {"Week Day (Name)", "Dia Semana"}, {"Month (Short Name)", "Mês (Abrev.)"}, {"WeekYearId", "CodSemanaAno"}, {"QuarterYearId", "CodTrimestreAno"}, {"SemesterYearId", "CodSemestreAno"}, {"Period (Day)", "Período (Dia)"}, {"Period (Day) - Order", "Período (Dia) - Ordem"},{"Week Day (Short)", "Dia da Semana (Abrev.)"}}),
+    result = if P_Language = "PT" then #"If Portuguese" else #"Add WeekDay Name"
 in
     result
