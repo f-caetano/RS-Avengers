@@ -1,2 +1,2 @@
-# Power BI Desktop Port 
-Get-NetTCPConnection | Where-Object -Property OwningProcess -in (Get-WmiObject Win32_Process -Filter "CommandLine LIKE '%Desktop%' and Name ='msmdsrv.exe'").ProcessId | Where-Object -Property LocalAddress -eq '127.0.0.1' | select-Object Local*,OwningProcess,@{Name="Path";Expression={(Get-Process -Id $_.OwningProcess).Path}}
+# Get Power BI Desktop Local Port (may need elevated permissions)
+Get-NetTCPConnection | ? OwningProcess -in (gwmi Win32_Process -f "CommandLine LIKE '%Desktop%' and Name ='msmdsrv.exe'").ProcessId|? LocalAddress -eq '127.0.0.1'|select Local*,OwningProcess,@{n="PBID Title";e={(gps -Id (gcim Win32_Process -f "ProcessId = $($_.OwningProcess)").ParentProcessId).MainWindowTitle}},@{n="Path";e={(gps -Id $_.OwningProcess).Path}}|ft
