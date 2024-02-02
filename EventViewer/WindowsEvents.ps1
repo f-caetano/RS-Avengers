@@ -1,5 +1,5 @@
 <# Requires .NET Framework 3.5+
-Collects Windows Event Viewer logs into a ZIP file
+Collects Windows Event Viewer logs of past X days into ZIP file
 Please review contents before sharing and remove the temporary created folder: "_WindowsEvents"
 ___________________________________________________________________________#>
 # 1.Customizable Variables
