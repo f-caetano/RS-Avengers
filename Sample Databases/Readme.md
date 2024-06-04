@@ -1,5 +1,5 @@
 Default ContosoRetailDW with dates between 2007-01-01 and 2009-12-31
- - Contoso.bak 
+ - (Contoso.bak)[https://www.microsoft.com/en-ca/download/details.aspx?id=18279] 
 
 | Table Name          | Row Count  |
 | ------------------- | ---------- |
