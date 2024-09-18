@@ -16,18 +16,5 @@ Default ContosoRetailDW with dates between 2007-01-01 and 2009-12-31
 | dbo.DimProduct      | 2517       |
 | (...other tables...)| >2000	|
 
-1 billion rows Contoso sample with dates between 2015-01-01 and 2025-01-01:
- - Contoso1B.bak 
- - Contoso1B.bacpac
- 
-| Table                | RowCount   |
-| -------------------- | ---------- |
-| Data.CurrencyExchange| 202100     |
-| Data.Customer        | 1790458    |
-| Data.Date            | 2557       |
-| Data.GeoLocations    | 617        |
-| Data.OrderRows       | 1691602154 |
-| Data.Orders          | 703834697  |
-| Data.Product         | 2517       |
-| Data.Store           | 74         |
+To generate, for example 1 billion rows Contoso sample data check SQL BI Data Generator Tool_ https://www.sqlbi.com/tools/contoso-data-generator/ 
 
