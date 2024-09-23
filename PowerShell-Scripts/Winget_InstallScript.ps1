@@ -8,11 +8,11 @@ $applications = @(
     # #### Productivity Tools ####
     @{ Name = "PowerShell 7"; ID = "Microsoft.PowerShell" },
     @{ Name = "Notepad++"; ID = "Notepad++.Notepad++" },
-    # Has a custom CMD to be able to select the VS windows Shell menu option
+    # Custom CMD to be able to select the Windows Shell menu options to be enabled 
     @{ Name = "Visual Studio Code"; ID = "Microsoft.VisualStudioCode"; CMD = 'winget install --id Microsoft.VisualStudioCode --override ''/VERYSILENT /SP- /MERGETASKS="!runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"''' },
     @{ Name = "Sysinternals Suite" },
     @{ Name = "KeePass"; ID = "DominikReichl.KeePass" },
-    @{ Name = "Microsoft Remote Desktop" },
+    @{ Name = "Remote Desktop"; ID="Microsoft.RemoteDesktopClient"},
     @{ Name = "7-Zip"; ID = "7zip.7zip" },
 
     # #### BI Tools ####
@@ -31,6 +31,7 @@ $applications = @(
 
     # #### Network Tools ####
     @{ Name = "Fiddler"; ID = "Telerik.Fiddler.Classic" },
+    @{ Name = "Bruno"; ID = "Bruno.Bruno" },
     @{ Name = "Wireshark"; ID = "WiresharkFoundation.Wireshark" },
     @{ Name = "Microsoft Network Monitor"; ID = "Microsoft.NetMon" }
 )
