@@ -34,6 +34,7 @@ $applications = @(
     @{Name="Fiddler"; ID="Telerik.Fiddler.Classic"},
     @{Name="Bruno"; ID="Bruno.Bruno"},
     @{Name="Wireshark"; ID="WiresharkFoundation.Wireshark"},
+    #Wireshark Note: NCAP doesn't support Winget. Go to https://npcap.com/#download
     @{Name="Microsoft Network Monitor"; ID="Microsoft.NetMon"}
 )
 
