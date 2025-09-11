@@ -11,7 +11,7 @@ $SqlQuery        = "SELECT * FROM FACTSALES WHERE ROWNUM <= 40000"
 $FetchMultiplier = 1000  # Optional: Debug on large datasets
 # ==========================
 
-Build connection string
+#Build connection string
 $connStr = "User Id=$UserName;Password=$Password;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$DbHost)(PORT=$Port))(CONNECT_DATA=(SERVICE_NAME=$ServiceName)))"
 
 # Create connection using system-registered Oracle.DataAccess provider
