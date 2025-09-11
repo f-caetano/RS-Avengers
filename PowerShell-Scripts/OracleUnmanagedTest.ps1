@@ -7,48 +7,52 @@ $Port            = 1521
 $ServiceName     = "SERVICE_NAME"
 $UserName        = "OracleUser"
 $Password        = "PW"   # Use Get-Credential in production
-$SqlQuery        = "SELECT * FROM FACTSALES WHERE ROWNUM <= 40000"
-$FetchMultiplier = 1000  # Optional: Debug on large datasets
+$CustomFetchSize = ""     # In bytes (default 131072); empty will use registry value
+$SqlQuery        = "SELECT * FROM FACTSALES <= 1000000"
 # ==========================
 
-#Build connection string
-$connStr = "User Id=$UserName;Password=$Password;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$DbHost)(PORT=$Port))(CONNECT_DATA=(SERVICE_NAME=$ServiceName)))"
+# FETCHSIZE
+$RegistryPath     = "HKLM:\SOFTWARE\Oracle\ODP.NET\4.122.19.1"
+$DefaultFetchSize = 131072
+$FetchSizeBytes   = $DefaultFetchSize
+if ($CustomFetchSize -and $CustomFetchSize -match '^\d+$') {
+    $FetchSizeBytes = [int]$CustomFetchSize
+    $FetchSizeMB = [math]::Round($FetchSizeBytes / 1MB, 2)
+    Write-Host "Using custom FetchSize: $FetchSizeMB MB"
+} else {
+    try {
+        $regValue = Get-ItemPropertyValue -Path $RegistryPath -Name "FetchSize"
+        if ($regValue -and $regValue -match '^\d+$') {
+            $FetchSizeBytes = [int]$regValue
+        }
+    } catch {}
+    $FetchSizeMB = [math]::Round($FetchSizeBytes / 1MB, 2)
+    Write-Host "Using FetchSize: $FetchSizeMB MB"
+}
 
-# Create connection using system-registered Oracle.DataAccess provider
+#Connection
+$connStr = "User Id=$UserName;Password=$Password;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$DbHost)(PORT=$Port))(CONNECT_DATA=(SERVICE_NAME=$ServiceName)))"
 try {
     $conn = [System.Data.Common.DbProviderFactories]::GetFactory("Oracle.DataAccess.Client").CreateConnection()
     $conn.ConnectionString = $connStr
 } catch {
-    Write-Error "Failed to create Oracle connection using system-registered provider: $_"
+    Write-Error "Failed to create Oracle connection: $_"
     exit 1
 }
 
-# Start stopwatch
+#Query Execution
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
 try {
     $conn.Open()
     $connectTime = $stopwatch.Elapsed.TotalSeconds
-
     $cmd = $conn.CreateCommand()
     $cmd.CommandText = $SqlQuery
-
     $reader = $cmd.ExecuteReader()
     $executeTime = ($stopwatch.Elapsed.TotalSeconds - $connectTime)
-
-    # Try setting FetchSize if supported
-    if ($FetchMultiplier -and $reader.RowSize) {
-        try {
-            $reader.FetchSize = $reader.RowSize * $FetchMultiplier
-        } catch {
-            Write-Warning "Unable to set FetchSize. Continuing with default."
-        }
-    }
-
+    try { $reader.FetchSize = $FetchSizeBytes } catch {}
     $rows = 0
     while ($reader.Read()) { $rows++ }
     $fetchTime = ($stopwatch.Elapsed.TotalSeconds - $connectTime - $executeTime)
-
     $reader.Close()
 } catch {
     Write-Error "Error during query execution: $_"
@@ -57,7 +61,7 @@ try {
     $stopwatch.Stop()
 }
 
-# Output metrics
+#Metrics
 Write-Host "Rows fetched: $rows"
 Write-Host "Connect Time: $([math]::Round($connectTime,2)) sec"
 Write-Host "Execute Time: $([math]::Round($executeTime,2)) sec"
