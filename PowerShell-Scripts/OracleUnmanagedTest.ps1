@@ -89,8 +89,8 @@ finally {
 Write-Host "==============================="
 Write-Host "Rows: $rows"
 Write-Host "Open Connection: $([math]::Round($connectTime,2)) sec"
-Write-Host "Start Execute SQL: $([math]::Round($executeTime,2)) sec"
-Write-Host "Query Duration:   $([math]::Round($fetchTime,2)) sec"
-Write-Host "Total:   $([math]::Round($stopwatch.Elapsed.TotalSeconds,2)) sec"
+Write-Host "Query Start: $([math]::Round($executeTime,2)) sec"
+Write-Host "Data Retrieval:   $([math]::Round($fetchTime,2)) sec"
+Write-Host "Total Elapsed Time:   $([math]::Round($stopwatch.Elapsed.TotalSeconds,2)) sec"
 if ($OutputCsv) { Write-Host "CSV: $OutputCsv" }
 Write-Host "==============================="
