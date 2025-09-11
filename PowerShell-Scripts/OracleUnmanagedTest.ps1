@@ -10,7 +10,6 @@ $Password        = "PW"   # Use Get-Credential in production
 $SqlQuery    = "SELECT * FROM FACTSALES WHERE ROWNUM <= 40000"
 $OutputCsv   = ""   # When ""(empty) = fast query check. Otherwise streaming mode to save .csv
 # ==========================
-
 # Build connection string
 $dataSource = "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$DbHost)(PORT=$Port))(CONNECT_DATA=(SERVICE_NAME=$ServiceName)))"
 $connStr = "User Id=$UserName;Password=$Password;Data Source=$dataSource"
@@ -91,7 +90,7 @@ Write-Host "==============================="
 Write-Host "Rows: $rows"
 Write-Host "Open Connection: $([math]::Round($connectTime,2)) sec"
 Write-Host "Start Execute SQL: $([math]::Round($executeTime,2)) sec"
-Write-Host "Execute SQL:   $([math]::Round($fetchTime,2)) sec"
+Write-Host "Query Duration:   $([math]::Round($fetchTime,2)) sec"
 Write-Host "Total:   $([math]::Round($stopwatch.Elapsed.TotalSeconds,2)) sec"
 if ($OutputCsv) { Write-Host "CSV: $OutputCsv" }
 Write-Host "==============================="
