@@ -11,7 +11,7 @@ $CustomFetchSize = ""     # In bytes (default 131072); empty will use registry v
 $OutputCsv       = "c:\ms\test.csv" # Leave empty "" to skip saving
 $SqlQuery        = "SELECT * FROM FACTSALES WHERE ROWNUM <= 40000"
 # ==========================
-# FETCHSIZE
+# FETCHSIZE from Registry
 $RegistryPath = "HKLM:\SOFTWARE\Oracle\ODP.NET\4.122.19.1"
 try {
     $regValue = Get-ItemPropertyValue -Path $RegistryPath -Name "FetchSize"
@@ -21,8 +21,10 @@ try {
     }
 } catch {}
 
-# Connection
+# Connection String with pooling
 $connStr = "User Id=$UserName;Password=$Password;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$DbHost)(PORT=$Port))(CONNECT_DATA=(SERVICE_NAME=$ServiceName)))"
+$connStr += ";Pooling=true;Min Pool Size=1;Max Pool Size=50;Connection Lifetime=120"
+
 try {
     $conn = [System.Data.Common.DbProviderFactories]::GetFactory("Oracle.DataAccess.Client").CreateConnection()
     $conn.ConnectionString = $connStr
@@ -39,11 +41,26 @@ try {
 
     $cmd = $conn.CreateCommand()
     $cmd.CommandText = $SqlQuery
+
+    # Apply custom FetchSize only if provided
+    if ($CustomFetchSize -and $CustomFetchSize -match '^\d+$') {
+        $cmd.FetchSize = [int]$CustomFetchSize
+        Write-Host "Using custom Command FetchSize: $CustomFetchSize bytes"
+    }
+
     $reader = $cmd.ExecuteReader()
+
+    # Set reader.FetchSize dynamically (only if RowSize > 0)
+    $rowSize = $reader.RowSize
+    if ($rowSize -gt 0) {
+        $reader.FetchSize = $rowSize * 1000
+        # No log here to avoid confusion
+    }
+
     $executeTime = ($stopwatch.Elapsed.TotalSeconds - $connectTime)
 
     $rows = 0
-    $data = @()
+    $data = New-Object 'System.Collections.Generic.List[object]'
 
     Write-Host "Executing Query ..."
     while ($reader.Read()) {
@@ -53,7 +70,7 @@ try {
             $value = $reader.GetValue($i)
             $row[$columnName] = $value
         }
-        $data += New-Object PSObject -Property $row
+        $data.Add((New-Object PSObject -Property $row))
         $rows++
     }
 
@@ -64,9 +81,7 @@ try {
     if (![string]::IsNullOrWhiteSpace($OutputCsv)) {
         Write-Host "Saving $OutputCsv ..."
         $data | Export-Csv -Path $OutputCsv -NoTypeInformation -Encoding UTF8
-    } else {
-        Write-Host "OutputCsv is empty. Skipping file save."
-    }
+    } 
 
 } catch {
     Write-Error "Error during query execution: $_"
