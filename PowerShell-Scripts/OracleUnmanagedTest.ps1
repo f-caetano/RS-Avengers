@@ -8,11 +8,10 @@ $ServiceName     = "SERVICE_NAME"
 $UserName        = "OracleUser"
 $Password        = "PW"   # Use Get-Credential in production
 $CustomFetchSize = ""     # In bytes (default 131072); empty will use registry value
-$SqlQuery        = "SELECT * FROM FACTSALES <= 1000000"
+$OutputCsv       = "c:\ms\test.csv" # Leave empty "" to skip saving
+$SqlQuery        = "SELECT * FROM FACTSALES WHERE ROWNUM <= 40000"
 # ==========================
-
-
-# FETCHSIZE (Read-only)
+# FETCHSIZE
 $RegistryPath = "HKLM:\SOFTWARE\Oracle\ODP.NET\4.122.19.1"
 try {
     $regValue = Get-ItemPropertyValue -Path $RegistryPath -Name "FetchSize"
@@ -37,14 +36,38 @@ $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 try {
     $conn.Open()
     $connectTime = $stopwatch.Elapsed.TotalSeconds
+
     $cmd = $conn.CreateCommand()
     $cmd.CommandText = $SqlQuery
     $reader = $cmd.ExecuteReader()
     $executeTime = ($stopwatch.Elapsed.TotalSeconds - $connectTime)
+
     $rows = 0
-    while ($reader.Read()) { $rows++ }
+    $data = @()
+
+    Write-Host "Executing Query ..."
+    while ($reader.Read()) {
+        $row = @{}
+        for ($i = 0; $i -lt $reader.FieldCount; $i++) {
+            $columnName = $reader.GetName($i)
+            $value = $reader.GetValue($i)
+            $row[$columnName] = $value
+        }
+        $data += New-Object PSObject -Property $row
+        $rows++
+    }
+
     $fetchTime = ($stopwatch.Elapsed.TotalSeconds - $connectTime - $executeTime)
     $reader.Close()
+
+    # Output CSV only if path is provided
+    if (![string]::IsNullOrWhiteSpace($OutputCsv)) {
+        Write-Host "Saving $OutputCsv ..."
+        $data | Export-Csv -Path $OutputCsv -NoTypeInformation -Encoding UTF8
+    } else {
+        Write-Host "OutputCsv is empty. Skipping file save."
+    }
+
 } catch {
     Write-Error "Error during query execution: $_"
 } finally {
@@ -53,9 +76,8 @@ try {
 }
 
 # Metrics
-Write-Host "Rows fetched: $rows"
+Write-Host "=============`nTotal Rows fetched: $rows"
 Write-Host "Connect Time: $([math]::Round($connectTime,2)) sec"
 Write-Host "Execute Time: $([math]::Round($executeTime,2)) sec"
 Write-Host "Fetch Time: $([math]::Round($fetchTime,2)) sec"
 Write-Host "Total Time: $([math]::Round($stopwatch.Elapsed.TotalSeconds,2)) sec"
-
