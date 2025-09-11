@@ -7,92 +7,91 @@ $Port            = 1521
 $ServiceName     = "SERVICE_NAME"
 $UserName        = "OracleUser"
 $Password        = "PW"   # Use Get-Credential in production
-$CustomFetchSize = ""     # In bytes (default 131072); empty will use registry value
-$OutputCsv       = "c:\ms\test.csv" # Leave empty "" to skip saving
-$SqlQuery        = "SELECT * FROM FACTSALES WHERE ROWNUM <= 40000"
+$SqlQuery    = "SELECT * FROM FACTSALES WHERE ROWNUM <= 40000"
+$OutputCsv   = ""   # When ""(empty) = fast query check. Otherwise streaming mode to save .csv
 # ==========================
-# FETCHSIZE from Registry
+
+# Build connection string
+$dataSource = "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$DbHost)(PORT=$Port))(CONNECT_DATA=(SERVICE_NAME=$ServiceName)))"
+$connStr = "User Id=$UserName;Password=$Password;Data Source=$dataSource"
+
+
+# Create connection via DbProviderFactories
+$factory = [System.Data.Common.DbProviderFactories]::GetFactory("Oracle.DataAccess.Client")
+$conn = $factory.CreateConnection()
+$conn.ConnectionString = $connStr
+
+# FetchSize from Registry
 $RegistryPath = "HKLM:\SOFTWARE\Oracle\ODP.NET\4.122.19.1"
 try {
     $regValue = Get-ItemPropertyValue -Path $RegistryPath -Name "FetchSize"
     if ($regValue -and $regValue -match '^\d+$') {
         $FetchSizeMB = [math]::Round([int]$regValue / 1MB, 2)
-        Write-Host "Registry FetchSize: $FetchSizeMB MB"
+        Write-Host "Regedit Oracle FetchSize: $FetchSizeMB MB"
     }
 } catch {}
 
-# Connection String with pooling
-$connStr = "User Id=$UserName;Password=$Password;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$DbHost)(PORT=$Port))(CONNECT_DATA=(SERVICE_NAME=$ServiceName)))"
-$connStr += ";Pooling=true;Min Pool Size=1;Max Pool Size=50;Connection Lifetime=120"
-
-try {
-    $conn = [System.Data.Common.DbProviderFactories]::GetFactory("Oracle.DataAccess.Client").CreateConnection()
-    $conn.ConnectionString = $connStr
-} catch {
-    Write-Error "Failed to create Oracle connection: $_"
-    exit 1
-}
-
-# Query Execution
+# Run
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$rows = 0
+$connectTime = $executeTime = $fetchTime = 0
+
 try {
     $conn.Open()
     $connectTime = $stopwatch.Elapsed.TotalSeconds
 
     $cmd = $conn.CreateCommand()
     $cmd.CommandText = $SqlQuery
-
-    # Apply custom FetchSize only if provided
-    if ($CustomFetchSize -and $CustomFetchSize -match '^\d+$') {
-        $cmd.FetchSize = [int]$CustomFetchSize
-        Write-Host "Using custom Command FetchSize: $CustomFetchSize bytes"
-    }
-
     $reader = $cmd.ExecuteReader()
+    $executeTime = $stopwatch.Elapsed.TotalSeconds - $connectTime
 
-    # Set reader.FetchSize dynamically (only if RowSize > 0)
-    $rowSize = $reader.RowSize
-    if ($rowSize -gt 0) {
-        $reader.FetchSize = $rowSize * 1000
-        # No log here to avoid confusion
+    $fetchStart = $stopwatch.Elapsed.TotalSeconds
+
+    if ([string]::IsNullOrWhiteSpace($OutputCsv)) {
+        # FAST MODE: just count rows
+        while ($reader.Read()) { $rows++ }
     }
+    else {
+        # STREAMING CSV MODE
+        $sw = [System.IO.StreamWriter]::new($OutputCsv, $false, [System.Text.UTF8Encoding]::new($true))
+        $fieldCount = $reader.FieldCount
+        $headers = (0..($fieldCount-1) | ForEach-Object { $reader.GetName($_) })
+        $sw.WriteLine(($headers -join ','))
 
-    $executeTime = ($stopwatch.Elapsed.TotalSeconds - $connectTime)
-
-    $rows = 0
-    $data = New-Object 'System.Collections.Generic.List[object]'
-
-    Write-Host "Executing Query ..."
-    while ($reader.Read()) {
-        $row = @{}
-        for ($i = 0; $i -lt $reader.FieldCount; $i++) {
-            $columnName = $reader.GetName($i)
-            $value = $reader.GetValue($i)
-            $row[$columnName] = $value
+        $values = New-Object object[] $fieldCount
+        while ($reader.Read()) {
+            $reader.GetValues($values) | Out-Null
+            $line = ($values | ForEach-Object {
+                if ($_ -eq $null -or $_ -is [System.DBNull]) { "" }
+                else {
+                    $s = [string]$_ -replace '"','""'
+                    if ($s -match '[,"\r\n]') { '"' + $s + '"' } else { $s }
+                }
+            }) -join ','
+            $sw.WriteLine($line)
+            $rows++
+            if ($rows % 5000 -eq 0) { $sw.Flush() }
         }
-        $data.Add((New-Object PSObject -Property $row))
-        $rows++
+        $sw.Close()
     }
 
-    $fetchTime = ($stopwatch.Elapsed.TotalSeconds - $connectTime - $executeTime)
+    $fetchTime = $stopwatch.Elapsed.TotalSeconds - $fetchStart
     $reader.Close()
-
-    # Output CSV only if path is provided
-    if (![string]::IsNullOrWhiteSpace($OutputCsv)) {
-        Write-Host "Saving $OutputCsv ..."
-        $data | Export-Csv -Path $OutputCsv -NoTypeInformation -Encoding UTF8
-    } 
-
-} catch {
-    Write-Error "Error during query execution: $_"
-} finally {
-    $conn.Close()
+}
+catch {
+    Write-Error $_
+}
+finally {
+    if ($conn) { $conn.Close() }
     $stopwatch.Stop()
 }
 
 # Metrics
-Write-Host "=============`nTotal Rows fetched: $rows"
-Write-Host "Connect Time: $([math]::Round($connectTime,2)) sec"
-Write-Host "Execute Time: $([math]::Round($executeTime,2)) sec"
-Write-Host "Fetch Time: $([math]::Round($fetchTime,2)) sec"
-Write-Host "Total Time: $([math]::Round($stopwatch.Elapsed.TotalSeconds,2)) sec"
+Write-Host "==============================="
+Write-Host "Rows: $rows"
+Write-Host "Open Connection: $([math]::Round($connectTime,2)) sec"
+Write-Host "Start Execute SQL: $([math]::Round($executeTime,2)) sec"
+Write-Host "Execute SQL:   $([math]::Round($fetchTime,2)) sec"
+Write-Host "Total:   $([math]::Round($stopwatch.Elapsed.TotalSeconds,2)) sec"
+if ($OutputCsv) { Write-Host "CSV: $OutputCsv" }
+Write-Host "==============================="
