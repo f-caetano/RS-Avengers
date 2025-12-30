@@ -1,4 +1,4 @@
-﻿# Script for Windows 10/11
+﻿## Script for Windows 10/11
 ## Comment lines on the applications for not install/upgrade. New apps can be added respecting the name or ID of WINGET SEARCH %app% 
 $applications = @(
     # #### OFFICE ####
@@ -55,7 +55,7 @@ function Log-Message {
 
 # Ensure the latest Winget is installed
 Write-Host "====== Checking for the latest version of Winget ======"
-$wingetUpgrade=winget upgrade winget --silent --disable-interactivity
+$wingetUpgrade=winget upgrade winget --silent --disable-interactivity --source winget
 Log-Message "Executing... $wingetUpgrade"
 $wingetUpgrade
 Log-Message "Finished checking Winget latest install"
@@ -90,4 +90,5 @@ foreach ($app in $applications) {
     }
 }
 Log-Message "Script execution finished"
+
 Read-Host -Prompt "`nFinished. Enter to exit"
