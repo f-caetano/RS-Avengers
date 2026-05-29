@@ -452,11 +452,13 @@ $timer.Add_Tick({
         if ($r.OutputCsv) {
             $lines += ""
             $lines += "CSV serialize + write          : {0:N3} sec" -f $r.ClientSec
-            $lines += ""
             $lines += "Total (driver + CSV)           : {0:N3} sec" -f $r.TotalSec
+            $lines += "Rows Read                      : {0:N0}" -f $r.Rows
             $lines += "CSV Path                       : $($r.OutputCsv)"
         }
-        $lines += "Rows Read                      : {0:N0}" -f $r.Rows
+        else {
+            $lines += "Rows Read                      : {0:N0}" -f $r.Rows
+        }
         $txtOut.Text = $lines -join "`r`n"
         Stop-Run
     }
