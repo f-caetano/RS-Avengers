@@ -401,6 +401,10 @@ $script:rs = $null; $script:ps = $null; $script:handle = $null; $script:cancelli
 $timer = New-Object Windows.Forms.Timer
 $timer.Interval = 200
 
+function Format-Dur([double]$sec) {
+    [TimeSpan]::FromSeconds($sec).ToString('hh\:mm\:ss\.fff')
+}
+
 function Stop-Run {
     $timer.Stop()
     if ($script:ps)     { $script:ps.Dispose() }
@@ -434,7 +438,7 @@ $timer.Add_Tick({
         if ($r.ConnectionOnly) {
             $lines += "Driver DLL                     : $driverDisplay"
             $lines += ""
-            $lines += "OracleConnection.Open()        : {0:N3} sec" -f $r.ConnectSec
+            $lines += "OracleConnection.Open()        : $(Format-Dur $r.ConnectSec)"
             $lines += ""
             $lines += "Result                         : Connection succeeded"
             $txtOut.Text = $lines -join "`r`n"
@@ -445,18 +449,21 @@ $timer.Add_Tick({
         $lines += "Object                         : $($r.CommandType)"
         $lines += "Command Text                   : $($r.CommandText)"
         $lines += ""
-        $lines += "OracleConnection.Open()        : {0:N3} sec" -f $r.ConnectSec
-        $lines += "OracleCommand.ExecuteReader()  : {0:N3} sec" -f $r.ExecSec
-        $lines += "OracleDataReader.Read() x rows : {0:N3} sec" -f $r.FetchSec
-        $lines += "Total                          : {0:N3} sec" -f ($r.ConnectSec + $r.ExecSec + $r.FetchSec)
+        $lines += "OracleConnection.Open()        : $(Format-Dur $r.ConnectSec)"
+        $lines += "OracleCommand.ExecuteReader()  : $(Format-Dur $r.ExecSec)"
+        $lines += "OracleDataReader.Read() x rows : $(Format-Dur $r.FetchSec)"
+        $lines += "Subtotal                       : $(Format-Dur ($r.ConnectSec + $r.ExecSec + $r.FetchSec))"
         if ($r.OutputCsv) {
             $lines += ""
-            $lines += "CSV serialize + write          : {0:N3} sec" -f $r.ClientSec
-            $lines += "Total (driver + CSV)           : {0:N3} sec" -f $r.TotalSec
+            $lines += "CSV serialize + write          : $(Format-Dur $r.ClientSec)"
+            $lines += "Total (driver + CSV)           : $(Format-Dur $r.TotalSec)"
             $lines += "Rows Read                      : {0:N0}" -f $r.Rows
             $lines += "CSV Path                       : $($r.OutputCsv)"
         }
         else {
+            $lines += ""
+            $lines += "OracleDataReader.GetValues()   : $(Format-Dur $r.ClientSec)"
+            $lines += "Total (driver + materialize)   : $(Format-Dur $r.TotalSec)"
             $lines += "Rows Read                      : {0:N0}" -f $r.Rows
         }
         $txtOut.Text = $lines -join "`r`n"
