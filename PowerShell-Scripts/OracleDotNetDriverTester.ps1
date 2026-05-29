@@ -140,6 +140,7 @@ $QueryScript = {
     $conn.ConnectionString  = $builder.ConnectionString
 
     $driverDll = $conn.GetType().Assembly.Location
+    $driverFileVer = try { [System.Diagnostics.FileVersionInfo]::GetVersionInfo($driverDll).FileVersion } catch { $null }
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $rows = 0; $connectSec = 0; $execSec = 0; $fetchSec = 0; $clientSec = 0
@@ -218,7 +219,7 @@ $QueryScript = {
         Rows = $rows; ConnectSec = $connectSec; ExecSec = $execSec
         FetchSec = $fetchSec; ClientSec = $clientSec; ConnectionOnly = $connectionOnly
         TotalSec = $sw.Elapsed.TotalSeconds; OutputCsv = $OutputCsv
-        DriverDll = $driverDll; CommandType = $cmdType; CommandText = $SqlQuery
+        DriverDll = $driverDll; DriverFileVersion = $driverFileVer; CommandType = $cmdType; CommandText = $SqlQuery
     }
 }
 
@@ -428,29 +429,31 @@ $timer.Add_Tick({
             throw $script:ps.Streams.Error[0].Exception
         }
         $lines = @()
+        $driverDisplay = $r.DriverDll
+        if ($r.DriverFileVersion) { $driverDisplay = "$($r.DriverDll) (File version $($r.DriverFileVersion))" }
         if ($r.ConnectionOnly) {
-            $lines += "Driver DLL                     : $($r.DriverDll)"
+            $lines += "Driver DLL                     : $driverDisplay"
             $lines += ""
-            $lines += "OracleConnection.Open()        : {0,8:N3} sec" -f $r.ConnectSec
+            $lines += "OracleConnection.Open()        : {0:N3} sec" -f $r.ConnectSec
             $lines += ""
             $lines += "Result                         : Connection succeeded"
             $txtOut.Text = $lines -join "`r`n"
             Stop-Run
             return
         }
-        $lines += "Driver DLL                     : $($r.DriverDll)"
+        $lines += "Driver DLL                     : $driverDisplay"
         $lines += "Object                         : $($r.CommandType)"
         $lines += "Command Text                   : $($r.CommandText)"
         $lines += ""
-        $lines += "OracleConnection.Open()        : {0,8:N3} sec" -f $r.ConnectSec
-        $lines += "OracleCommand.ExecuteReader()  : {0,8:N3} sec" -f $r.ExecSec
-        $lines += "OracleDataReader.Read() x rows : {0,8:N3} sec" -f $r.FetchSec
-        $lines += "Total                          : {0,8:N3} sec" -f ($r.ConnectSec + $r.ExecSec + $r.FetchSec)
+        $lines += "OracleConnection.Open()        : {0:N3} sec" -f $r.ConnectSec
+        $lines += "OracleCommand.ExecuteReader()  : {0:N3} sec" -f $r.ExecSec
+        $lines += "OracleDataReader.Read() x rows : {0:N3} sec" -f $r.FetchSec
+        $lines += "Total                          : {0:N3} sec" -f ($r.ConnectSec + $r.ExecSec + $r.FetchSec)
         if ($r.OutputCsv) {
             $lines += ""
-            $lines += "CSV serialize + write          : {0,8:N3} sec" -f $r.ClientSec
+            $lines += "CSV serialize + write          : {0:N3} sec" -f $r.ClientSec
             $lines += ""
-            $lines += "Total (driver + CSV)           : {0,8:N3} sec" -f $r.TotalSec
+            $lines += "Total (driver + CSV)           : {0:N3} sec" -f $r.TotalSec
             $lines += "CSV Path                       : $($r.OutputCsv)"
         }
         $lines += "Rows Read                      : {0:N0}" -f $r.Rows
