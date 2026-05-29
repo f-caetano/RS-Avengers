@@ -369,7 +369,7 @@ $txtOut = New-Object Windows.Forms.TextBox
 $txtOut.Multiline = $true; $txtOut.ScrollBars = "Vertical"; $txtOut.ReadOnly = $true
 $txtOut.Font = New-Object Drawing.Font("Consolas", 9)
 $txtOut.Location = New-Object Drawing.Point(15, $y)
-$txtOut.Size = New-Object Drawing.Size(600, 240); $form.Controls.Add($txtOut)
+$txtOut.Size = New-Object Drawing.Size(600, 210); $form.Controls.Add($txtOut)
 $form.ClientSize = New-Object Drawing.Size(630, ($txtOut.Bottom + 12))
 
 #endregion
@@ -429,34 +429,31 @@ $timer.Add_Tick({
         }
         $lines = @()
         if ($r.ConnectionOnly) {
-            $lines += "Driver assembly                : $($r.DriverDll)"
-            $lines += "Mode                           : Connection test (no SQL)"
+            $lines += "Driver DLL                     : $($r.DriverDll)"
             $lines += ""
-            $lines += "--"
             $lines += "OracleConnection.Open()        : {0,8:N3} sec" -f $r.ConnectSec
-            $lines += "Connection succeeded."
+            $lines += ""
+            $lines += "Result                         : Connection succeeded"
             $txtOut.Text = $lines -join "`r`n"
             Stop-Run
             return
         }
-        $lines += "Driver assembly                : $($r.DriverDll)"
-        $lines += "Command object                 : $($r.CommandType)"
-        $lines += "Command text sent to driver    : $($r.CommandText)"
+        $lines += "Driver DLL                     : $($r.DriverDll)"
+        $lines += "Object                         : $($r.CommandType)"
+        $lines += "Command Text                   : $($r.CommandText)"
         $lines += ""
-        $lines += "--"
         $lines += "OracleConnection.Open()        : {0,8:N3} sec" -f $r.ConnectSec
         $lines += "OracleCommand.ExecuteReader()  : {0,8:N3} sec" -f $r.ExecSec
         $lines += "OracleDataReader.Read() x rows : {0,8:N3} sec" -f $r.FetchSec
         $lines += "Total                          : {0,8:N3} sec" -f ($r.ConnectSec + $r.ExecSec + $r.FetchSec)
         if ($r.OutputCsv) {
             $lines += ""
-            $lines += "-- This tool's client-side work (NOT driver, NOT Power BI) --"
-            $lines += "CSV serialize + file write     : {0,8:N3} sec" -f $r.ClientSec
+            $lines += "CSV serialize + write          : {0,8:N3} sec" -f $r.ClientSec
             $lines += ""
-            $lines += "Total wall clock               : {0,8:N3} sec" -f $r.TotalSec
-            $lines += "CSV file                       : $($r.OutputCsv)"
+            $lines += "Total (driver + CSV)           : {0,8:N3} sec" -f $r.TotalSec
+            $lines += "CSV Path                       : $($r.OutputCsv)"
         }
-        $lines += "Rows                           : {0:N0}" -f $r.Rows
+        $lines += "Rows Read                      : {0:N0}" -f $r.Rows
         $txtOut.Text = $lines -join "`r`n"
         Stop-Run
     }
