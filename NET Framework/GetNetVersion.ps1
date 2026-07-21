@@ -1,6 +1,5 @@
-# Based on the official documentation bellow
-# https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
+# Based on the official documentation below
+# https://learn.microsoft.com/en-us/dotnet/framework/install/how-to-determine-which-versions-are-installed
 #===================================================================================================================================
 $RegLocal = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" -name InstallPath,Release -EA 0
-$RegLocal | Select-Object -Property InstallPath, Release, @{name=".NET Framework"; expression={switch -regex ($_.Release) {"378389"{[Version]"4.5"}"378675|378758"{[Version]"4.5.1"}"379893"{ [Version]"4.5.2" }"393295|393297" { [Version]"4.6" }"394254|394271" { [Version]"4.6.1" }"394802|394806" { [Version]"4.6.2" }"460798|460805" { [Version]"4.7" }"461308|461310" { [Version]"4.7.1" }"461808|461814" { [Version]"4.7.2" }"528040|528049" { [Version]"4.8" }"533320" { [Version]"4.8.1" }{$_ -gt 533320} { [Version]"Newer than 4.8.1+" }}}} | Format-Table -AutoSize
-#
+$RegLocal | Select-Object -Property InstallPath, Release, @{name=".NET Framework"; expression={switch ($_.Release) {{$_ -gt 533509}{"Newer than 4.8.1 (Release $($_.Release))"; break}{$_ -ge 533320}{"4.8.1"; break}{$_ -ge 528040}{"4.8"; break}{$_ -ge 461808}{"4.7.2"; break}{$_ -ge 461308}{"4.7.1"; break}{$_ -ge 460798}{"4.7"; break}{$_ -ge 394802}{"4.6.2"; break}{$_ -ge 394254}{"4.6.1"; break}{$_ -ge 393295}{"4.6"; break}{$_ -ge 379893}{"4.5.2"; break}{$_ -ge 378675}{"4.5.1"; break}{$_ -ge 378389}{"4.5"; break}default{"$($_.Release) (Unknown)"}}}} | Format-Table -AutoSize
